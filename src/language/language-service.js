@@ -28,6 +28,21 @@ const LanguageService = {
       )
       .where({ language_id })
   },
+
+  getFirstWord(db, userId) {
+    return db
+      .from('word')
+      .select('original', 'correct_count', 'incorrect_count', 'language_id')
+      .join('language', 'language.id', '=', 'word.language_id')
+      .where('word.id', 'language.head')
+      .andWhere({ 'language.user_id': userId });
+
+      //   return db
+      //     .from('word')
+      //     .select('original', 'correct_count', 'incorrect_count', 'SUM(correct_count) AS totalScore').
+      //     )
+      // });
+  }
 }
 
 module.exports = LanguageService

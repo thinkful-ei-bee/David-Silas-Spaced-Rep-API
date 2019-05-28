@@ -45,9 +45,14 @@ languageRouter
 
 languageRouter
   .get('/head', async (req, res, next) => {
-    // implement me
-    res.send('implement me!')
-  })
+    console.log('before the call');
+    const word = await LanguageService.getFirstWord(
+      req.app.get('db'),
+      req.user.id
+    );
+
+    console.log(word);
+  });
 
 languageRouter
   .post('/guess', async (req, res, next) => {
