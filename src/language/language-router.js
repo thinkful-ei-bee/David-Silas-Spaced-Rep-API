@@ -45,13 +45,28 @@ languageRouter
 
 languageRouter
   .get('/head', async (req, res, next) => {
-    console.log('before the call');
-    const word = await LanguageService.getFirstWord(
+    let word = await LanguageService.getFirstWord(
       req.app.get('db'),
       req.user.id
     );
 
-    console.log(word);
+    let score = await LanguageService.getTotalScore(
+      req.app.get('db'),
+      req.user.id
+    );
+    console.log(word, score);
+    word = word[0];
+    score = score[0];
+
+    const obj = {
+        nextWord: word.original,
+        wordCorrectCount: word.correct_count,
+        wordIncorrectCount: word.incorrect_count,
+        totalScore: Number(score.totalscore)
+    }
+    console.log(obj);
+
+    return res.status(200).json(obj);
   });
 
 languageRouter

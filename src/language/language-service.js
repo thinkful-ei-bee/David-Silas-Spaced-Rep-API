@@ -29,19 +29,22 @@ const LanguageService = {
       .where({ language_id })
   },
 
+  getTotalScore(db, userId) {
+    return db
+      .from('word')
+      .select(db.raw('SUM(word.correct_count) as totalScore'))
+      .where({'language.user_id': userId })
+      .join('language', 'language.id', '=', 'word.language_id')
+  },
+
   getFirstWord(db, userId) {
     return db
       .from('word')
       .select('original', 'correct_count', 'incorrect_count', 'language_id')
       .join('language', 'language.id', '=', 'word.language_id')
-      .where('word.id', 'language.head')
+      .where('word.id', '=', db.raw('language.head'))
       .andWhere({ 'language.user_id': userId });
 
-      //   return db
-      //     .from('word')
-      //     .select('original', 'correct_count', 'incorrect_count', 'SUM(correct_count) AS totalScore').
-      //     )
-      // });
   }
 }
 
