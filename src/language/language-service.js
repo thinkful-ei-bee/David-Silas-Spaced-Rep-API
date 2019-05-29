@@ -14,6 +14,7 @@ const LanguageService = {
   },
 
   updateHead(db, id, newHead) {
+    console.log('new head will be', newHead);
     return db
       .from ('language')
       .where({ id })
@@ -44,13 +45,14 @@ const LanguageService = {
       .join('language', 'language.id', '=', 'word.language_id')
   },
 
-  getFirstWord(db, userId) {
+  getFirstWord(db, languageId) {
     return db
       .from('word')
-      .select('*')
-      .join('language', 'language.id', '=', 'word.language_id')
-      .where('word.id', '=', db.raw('language.head'))
-      .andWhere({ 'language.user_id': userId });
+      .select('word.*')
+      //.join('language', 'language.id', '=', 'word.language_id')
+      .join('language', 'language.head', '=', 'word.id')
+      //.where('word.id', '=', db.raw('language.head'))
+      .where({ 'language_id': languageId });
 
   },
 
