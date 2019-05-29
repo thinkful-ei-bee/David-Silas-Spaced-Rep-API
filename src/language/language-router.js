@@ -1,8 +1,8 @@
-const express = require('express')
-const LanguageService = require('./language-service')
-const { requireAuth } = require('../middleware/jwt-auth')
-
-const languageRouter = express.Router()
+const express = require('express');
+const LanguageService = require('./language-service');
+const { requireAuth } = require('../middleware/jwt-auth');
+const jsonBodyParser = express.json();
+const languageRouter = express.Router();
 
 languageRouter
   .use(requireAuth)
@@ -54,7 +54,7 @@ languageRouter
       req.app.get('db'),
       req.user.id
     );
-    console.log(word, score);
+    
     word = word[0];
     score = score[0];
 
@@ -63,16 +63,52 @@ languageRouter
         wordCorrectCount: word.correct_count,
         wordIncorrectCount: word.incorrect_count,
         totalScore: Number(score.totalscore)
-    }
-    console.log(obj);
+    };
 
     return res.status(200).json(obj);
   });
 
 languageRouter
-  .post('/guess', async (req, res, next) => {
-    // implement me
-    res.send('implement me!')
+  .post('/guess', jsonBodyParser, async (req, res, next) => {
+    const body = req.body;
+    if (!body.guess) {
+      return res.status(400).send({error: `Missing 'guess' in request body`});
+    }
+    const obj = {};
+
+    let word = await LanguageService.getFirstWord(
+      req.app.get('db'),
+      req.user.id
+    );
+    word = word[0];
+    console.log(word);
+    obj.isCorrect = word.translation === body.guess;
+    obj.answer = word.translation;
+    
+    // if guess is correct: double memory value and add 1 to correct count
+    if (obj.isCorrect) {
+      word.memory_value *= 2;
+      word.correct_count += 1;
+    } else { 
+      // if guess is incorrect: set memory value to 1 and add 1 to incorrect count
+      word.memory_value = 1;
+      word.incorrect_count += 1;
+    }
+
+    const newHead = word.next;
+    
+    for (let i = 0; i < word.memory_value; i++) {
+      let nextWord = await LanguageService
+    }
+
+    // move item back M places
+    // follow next M times
+    // set next to next of word at that position
+    // set next of word at that position to the word that is being moved
+    // set head to point to original next
+    // get the values for new head and add them to obj
+
+    return res.status(200).send(obj);
   })
 
 module.exports = languageRouter

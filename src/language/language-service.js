@@ -40,7 +40,7 @@ const LanguageService = {
   getFirstWord(db, userId) {
     return db
       .from('word')
-      .select('original', 'correct_count', 'incorrect_count', 'language_id')
+      .select('*')
       .join('language', 'language.id', '=', 'word.language_id')
       .where('word.id', '=', db.raw('language.head'))
       .andWhere({ 'language.user_id': userId });
@@ -49,3 +49,6 @@ const LanguageService = {
 }
 
 module.exports = LanguageService
+
+
+//  .select('original', 'correct_count', 'incorrect_count', 'language_id')
