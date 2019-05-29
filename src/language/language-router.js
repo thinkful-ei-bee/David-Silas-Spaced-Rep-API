@@ -71,6 +71,7 @@ languageRouter
 languageRouter
   .post('/guess', jsonBodyParser, async (req, res, next) => {
     const body = req.body;
+    
     if (!body.guess) {
       return res.status(400).send({error: `Missing 'guess' in request body`});
     }
@@ -81,7 +82,7 @@ languageRouter
       req.user.id
     );
     word = word[0];
-    console.log(word);
+    console.log('OBJ IS', word);
     obj.isCorrect = word.translation === body.guess;
     obj.answer = word.translation;
     
@@ -96,19 +97,67 @@ languageRouter
     }
 
     const newHead = word.next;
-    
+    let currentWord = word;
+
     for (let i = 0; i < word.memory_value; i++) {
-      let nextWord = await LanguageService
+      if (!currentWord.next) {
+        break;
+      }
+
+      currentWord = await LanguageService.getWordFromId(
+        req.app.get('db'),
+        currentWord.next
+      );
     }
+    currentWord = currentWord[0];
+    word.next = currentWord.next;
+    currentWord.next = word.id;
+    console.log(word.next, currentWord.next);
+    await LanguageService.updateWord(
+      req.app.get('db'),
+      word.id,
+      {next: word.next}
+    );
+    
+    await LanguageService.updateWord(
+      req.app.get('db'),
+      currentWord.id,
+      {next: currentWord.next}
+    );
 
-    // move item back M places
-    // follow next M times
-    // set next to next of word at that position
-    // set next of word at that position to the word that is being moved
-    // set head to point to original next
-    // get the values for new head and add them to obj
+    await LanguageService.updateHead(
+      req.app.get('db'),
+      req.language.id,
+      newHead
+    );
+    
+    let nextWord = await LanguageService.getFirstWord(
+      req.app.get('db'),
+      req.user.id
+    );
 
-    return res.status(200).send(obj);
+    let score = await LanguageService.getTotalScore(
+      req.app.get('db'),
+      req.user.id
+    );
+    
+    nextWord = nextWord[0];
+    score = score[0];
+
+    obj.nextWord = nextWord.original;
+    obj.wordCorrectCount = nextWord.correct_count;
+    obj.wordIncorrectCount = nextWord.incorrect_count;
+    obj.totalScore = Number(score.totalscore);
+
+    console.log('AT END OBJ IS', obj);
+    return res.status(200).json({
+      nextWord: obj.nextWord,
+      totalScore: obj.totalScore,
+      wordCorrectCount: obj.wordCorrectCount,
+      wordIncorrectCount: obj.wordIncorrectCount,
+      answer: obj.answer,
+      isCorrect: obj.isCorrect
+    });
   })
 
 module.exports = languageRouter

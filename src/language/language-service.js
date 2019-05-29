@@ -13,6 +13,13 @@ const LanguageService = {
       .first()
   },
 
+  updateHead(db, id, newHead) {
+    return db
+      .from ('language')
+      .where({ id })
+      .update({head: newHead})
+  },
+
   getLanguageWords(db, language_id) {
     return db
       .from('word')
@@ -45,10 +52,23 @@ const LanguageService = {
       .where('word.id', '=', db.raw('language.head'))
       .andWhere({ 'language.user_id': userId });
 
+  },
+
+  getWordFromId(db, id) {
+    return db 
+      .from('word')
+      .select('*')
+      .where({ id });
+  },
+
+  updateWord(db, id, updates) {
+    return db
+      .from('word')
+      .where({ id })
+      .update(updates)
   }
 }
 
 module.exports = LanguageService
 
 
-//  .select('original', 'correct_count', 'incorrect_count', 'language_id')
