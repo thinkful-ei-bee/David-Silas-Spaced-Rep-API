@@ -13,12 +13,14 @@ const LanguageService = {
       .first()
   },
 
-  updateHead(db, id, newHead) {
-    console.log('new head will be', newHead);
+  updateLanguage(db, id, obj) {
     return db
       .from ('language')
       .where({ id })
-      .update({head: newHead})
+      .update({
+        head: obj.head,
+        total_score: obj.total_score
+      });
   },
 
   getLanguageWords(db, language_id) {

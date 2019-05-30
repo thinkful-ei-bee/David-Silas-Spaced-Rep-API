@@ -141,40 +141,25 @@ languageRouter
       {next: word.id}
     );
 
+    let score = await LanguageService.getTotalScore(
+      req.app.get('db'),
+      req.user.id
+    );
+    score = score[0];
     
-    console.log('new head assigned from router is', newHead);
-    await LanguageService.updateHead(
-      req.app.get('db'),
-      req.language.id,
-      newHead
+    await LanguageService.updateLanguage(
+      req.app.get('db'), req.language.id, {
+        head: newHead,
+        total_score: Number(score.totalscore)
+      }
     );
-
-    const updatedWord = await LanguageService.getWordFromId(
-      req.app.get('db'),
-      word.id
-    );
-
-    console.log('Updated word is', updatedWord);
     
     let nextWord = await LanguageService.getFirstWord(
       req.app.get('db'),
       req.user.id
     );
 
-    let score = await LanguageService.getTotalScore(
-      req.app.get('db'),
-      req.user.id
-    );
-
-    // let wholeList = await LanguageService.getLanguageWords(
-    //   req.app.get('db'),
-    //   req.language.id
-    // )
-
-    //console.log('list is', wholeList);
-    
     nextWord = nextWord[0];
-    score = score[0];
 
     obj.nextWord = nextWord.original;
     obj.wordCorrectCount = nextWord.correct_count;
