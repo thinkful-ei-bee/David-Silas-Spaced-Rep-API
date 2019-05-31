@@ -35,6 +35,10 @@ Requires a body with "guess" and the user's guess for the translation of the wor
 
 Returns "answer" with the correct translation of the word and "isCorrect", a Boolean representing whether or not the guess was correct. Also returns the same four keys as the get request to /api/language/head, but note that these represent the following word, not the current word; the "wordCorrectCount" will be for the word to be presented next, not the word that was just guessed. If the client wishes to immediately update the correct count for the word just guessed, it needs to do that based on "isCorrect."
 
+### POST /api/user
+
+Requires a body with "name", "username", and "password." Creates a new user with these credentials. 
+
 ## Scripts
 
 Start the application `npm start`
