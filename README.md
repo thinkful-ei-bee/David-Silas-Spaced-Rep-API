@@ -1,42 +1,39 @@
 # Spaced repetition API!
 
-## Local dev setup
+This is the server side for the spaced repetition project by David Bolin and Silas Hallahan. Primary documentation and instructions for installation for local development may be found at the [repo for the client](https://github.com/thinkful-ei-bee/David-Silas-Spaced-Rep). 
 
-If using user `dunder-mifflin`:
+## API Documentation
 
-```bash
-mv example.env .env
-createdb -U dunder-mifflin spaced-repetition
-createdb -U dunder-mifflin spaced-repetition-test
-```
+### POST /api/auth/token
 
-If your `dunder-mifflin` user has a password be sure to set it in `.env` for all appropriate fields. Or if using a different user, update appropriately.
+This route is for login. Requires a body with "username" and "password." Returns the key "authToken" with a jwt token as its value if login succeeds. Otherwise it returns 400 "error" with a description of the problem.
 
-```bash
-npm install
-npm run migrate
-env MIGRATION_DB_NAME=spaced-repetition-test npm run migrate
-```
+### PUT /api/auth/token
 
-And `npm test` should work at this point
+Returns a refreshed jwt under "authToken."
 
-## Configuring Postgres
+### GET /api/language
 
-For tests involving time to run properly, configure your Postgres database to run in the UTC timezone.
+Returns data for the current user. Returns "language" with keys of "id", "name," "total_score", "user_id", and "head." The name is the name of the language, "head" points to the head of the linked list of words for the user to practice. Total score is the number of correct answers the user has made.
 
-1. Locate the `postgresql.conf` file for your Postgres installation.
-   1. E.g. for an OS X, Homebrew install: `/usr/local/var/postgres/postgresql.conf`
-   2. E.g. on Windows, _maybe_: `C:\Program Files\PostgreSQL\11.2\data\postgresql.conf`
-2. Find the `timezone` line and set it to `UTC`:
+Also returns "words" with a list of the users words, each having the keys "id", "original," "translation," "memory_value", "correct_count", "incorrect_count", "language_id", and "next."
 
-```conf
-# - Locale and Formatting -
+"Memory value" is used to ensure that words that have been answered correctly multiple times are tested less frequently, while the correct and incorrect counts are the number of times the user has guessed correctly or incorrectly. "Next" points to the next word on the linked list.
 
-datestyle = 'iso, mdy'
-#intervalstyle = 'postgres'
-timezone = 'UTC'
-#timezone_abbreviations = 'Default'     # Select the set of available time zone
-```
+### GET /api/language/head
+
+Returns data for the next word with which to test the user. Contains the keys:
+
+nextWord: the untranslated word,
+wordCorrectCount: number of correct answers for this word
+wordIncorrectCount: number of incorrect answers for this word
+totalScore: user's total correct answers for all words
+
+### POST /api/language/guess
+
+Requires a body with "guess" and the user's guess for the translation of the word returned by the above request to the head endpoint.
+
+Returns "answer" with the correct translation of the word and "isCorrect", a Boolean representing whether or not the guess was correct. Also returns the same four keys as the get request to /api/language/head, but note that these represent the following word, not the current word; the "wordCorrectCount" will be for the word to be presented next, not the word that was just guessed. If the client wishes to immediately update the correct count for the word just guessed, it needs to do that based on "isCorrect."
 
 ## Scripts
 
